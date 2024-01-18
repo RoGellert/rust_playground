@@ -1,3 +1,2 @@
-some_stuff/prog1/Cargo.toml
-some_stuff/prog1/target
-some_stuff/prog1/Cargo.lock
+*Cargo.lock
+*target
