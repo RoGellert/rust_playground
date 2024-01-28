@@ -19,7 +19,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     stdout.execute(EnterAlternateScreen)?;
     stdout.execute(Hide)?;
 
-
     // Game loop
     audio.play("startup");
 
