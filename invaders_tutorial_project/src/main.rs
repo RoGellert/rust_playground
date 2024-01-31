@@ -1,4 +1,4 @@
-use std::{error::Error, io::{self}, sync::mpsc, thread, time::Duration};
+use std::{error::Error, io::{self}, sync::mpsc, thread, time::{Duration, Instant}};
 use crossterm::{cursor::{Hide, Show}, event::{self, Event, KeyCode}, terminal::{self, EnterAlternateScreen, LeaveAlternateScreen}, ExecutableCommand};
 use invaders_tutorial_project::{frame::{self, new_frame, Drawable}, player::Player, render};
 use rusty_audio::Audio;
@@ -39,15 +39,23 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Game loop
     audio.play("startup");
     let mut player = Player::new();
+    let mut instant = Instant::now();
     'gameloop: loop {
         // per-frame init
+        let delta = instant.elapsed();
+        instant = Instant::now(); 
         let mut curr_frame = new_frame();
         
         while event::poll(Duration::default())? {
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
                     KeyCode::Left | KeyCode::Char('a') => player.move_left(),
-                    KeyCode::Right| KeyCode::Char('d') => player.move_right(),
+                    KeyCode::Right | KeyCode::Char('d') => player.move_right(),
+                    KeyCode::Char('e') | KeyCode::Char(' ') => {
+                        if player.shoot() {
+                            audio.play("pew");
+                        }
+                    },
                     KeyCode::Esc | KeyCode::Char('q') => {
                         audio.play("lose");
                         break 'gameloop;
@@ -56,6 +64,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
         }
+
+        // updates
+        player.update(delta);
+
+
         // Draw and render
         player.draw(&mut curr_frame);
         let _ = render_tx.send(curr_frame);
